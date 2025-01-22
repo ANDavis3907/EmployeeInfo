@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <fstream>
 
 using namespace std;
 
@@ -20,10 +21,10 @@ public:
         : firstName(firstName), lastName(lastName), userId(userId), username(username), password(password), employeeType(employeeType) {}
 
     virtual void displayInfo() const {
-        cout << "Name: " << firstName << " " << lastName << endl;
-        cout << "User ID: " << userId << endl;
-        cout << "Employee Type: " << employeeType << endl;
+        cout << "Name: " << firstName << " " << lastName << ", User ID: " << userId << ", Username: " << username << ", Employee Type: " << employeeType << endl;
     }
+
+    virtual ~Employee() = default;
 };
 
 // Human Resources employee class
@@ -31,6 +32,66 @@ class HR_Employee : public Employee {
 public:
     HR_Employee(string firstName, string lastName, int userId, string username, string password) 
         : Employee(firstName, lastName, userId, username, password, "HR") {}
+
+    void viewEmployees(const vector<Employee*>& employees) const {
+        for (const auto& employee : employees) {
+            employee->displayInfo();
+            cout << "--------------------" << endl;
+        }
+    }
+
+    void searchEmployee(const vector<Employee*>& employees, int searchId) const {
+        for (const auto& employee : employees) {
+            if (employee->userId == searchId) {
+                employee->displayInfo();
+                return;
+            }
+        }
+        cout << "Employee not found." << endl;
+    }
+
+void modifyEmployee(vector<Employee*>& employees, int modifyId) {
+        for (auto& employee : employees) {
+            if (employee->userId == modifyId) {
+                string newFirstName, newLastName;
+                int newUserId;
+                string newUsername, newPassword;
+
+                cout << "Enter new first name: ";
+                cin >> newFirstName;
+                cout << "Enter new last name: ";
+                cin >> newLastName;
+                cout << "Enter new user ID: ";
+                cin >> newUserId;
+                cout << "Enter new username: ";
+                cin >> newUsername;
+                cout << "Enter new password: ";
+                cin >> newPassword;
+
+                employee->firstName = newFirstName;
+                employee->lastName = newLastName;
+                employee->userId = newUserId;
+                employee->username = newUsername;
+                employee->password = newPassword;
+
+                cout << "Employee information updated." << endl;
+                return;
+            }
+        }
+        cout << "Employee not found." << endl;
+    }
+
+    void deleteEmployee(vector<Employee*>& employees, int deleteId) {
+        for (auto it = employees.begin(); it != employees.end(); ++it) {
+            if ((*it)->userId == deleteId) {
+                delete *it; // Delete the Employee object before erasing from vector
+                employees.erase(it);
+                cout << "Employee deleted." << endl;
+                return;
+            }
+        }
+        cout << "Employee not found." << endl;
+    }
 };
 
 // Management employee class
@@ -38,6 +99,23 @@ class Manager : public Employee {
 public:
     Manager(string firstName, string lastName, int userId, string username, string password) 
         : Employee(firstName, lastName, userId, username, password, "Manager") {}
+
+    void viewEmployees(const vector<Employee*>& employees) const {
+        for (const auto& employee : employees) {
+            employee->displayInfo();
+            cout << "--------------------" << endl;
+        }
+    }
+
+    void searchEmployee(const vector<Employee*>& employees, int searchId) const {
+        for (const auto& employee : employees) {
+            if (employee->userId == searchId) {
+                employee->displayInfo();
+                return;
+            }
+        }
+        cout << "Employee not found." << endl;
+    }
 };
 
 // General employee class
@@ -45,20 +123,63 @@ class GeneralEmployee : public Employee {
 public:
     GeneralEmployee(string firstName, string lastName, int userId, string username, string password) 
         : Employee(firstName, lastName, userId, username, password, "Employee") {}
+
+    void viewOwnInfo() const {
+        displayInfo();
+    }
 };
 
 // Function to create sample employees
 void createSampleEmployees(vector<Employee*>& employees) {
-    employees.push_back(new HR_Employee("John", "Doe", 101, "hr1", "hr123", "HR"));
-    employees.push_back(new Manager("Jane", "Smith", 102, "manager1", "manager123", "Manager"));
-    employees.push_back(new GeneralEmployee("David", "Lee", 103, "employee1", "employee123", "Employee"));
-    employees.push_back(new GeneralEmployee("Mary", "Johnson", 104, "employee2", "employee234", "Employee"));
-    employees.push_back(new Manager("Michael", "Brown", 105, "manager2", "manager456", "Manager"));
-    employees.push_back(new HR_Employee("Sarah", "Williams", 106, "hr2", "hr456", "HR"));
-    employees.push_back(new GeneralEmployee("James", "Wilson", 107, "employee3", "employee567", "Employee"));
-    employees.push_back(new GeneralEmployee("Emily", "Davis", 108, "employee4", "employee678", "Employee"));
-    employees.push_back(new Manager("Robert", "Jones", 109, "manager3", "manager789", "Manager"));
-    employees.push_back(new GeneralEmployee("Christopher", "Anderson", 110, "employee5", "employee890", "Employee"));
+    employees.push_back(new HR_Employee("John", "Doe", 101, "JDoe", "hr123"));
+    employees.push_back(new Manager("Jane", "Smith", 102, "JSmith", "manager123"));
+    employees.push_back(new GeneralEmployee("David", "Lee", 103, "DLee", "employee123"));
+    employees.push_back(new GeneralEmployee("Mary", "Johnson", 104, "MJohnson", "employee234"));
+    employees.push_back(new Manager("Michael", "Brown", 105, "MBrown", "manager456"));
+    employees.push_back(new HR_Employee("Sarah", "Williams", 106, "SWilliams", "hr456"));
+    employees.push_back(new GeneralEmployee("James", "Wilson", 107, "JWilson", "employee567"));
+    employees.push_back(new GeneralEmployee("Emily", "Davis", 108, "EDavis", "employee678"));
+    employees.push_back(new Manager("Robert", "Jones", 109, "RJones", "manager789"));
+    employees.push_back(new GeneralEmployee("Christopher", "Anderson", 110, "CAnderson", "employee890"));
+}
+
+// Function to save employees to a file
+void saveEmployees(const vector<Employee*>& employees, const string& filename) {
+    ofstream outFile(filename);
+    if (outFile.is_open()) {
+        for (const auto& employee : employees) {
+            outFile << employee->firstName << " "
+                    << employee->lastName << " "
+                    << employee->userId << " "
+                    << employee->username << " "
+                    << employee->password << " "
+                    << employee->employeeType << endl;
+        }
+        outFile.close();
+    } else {
+        cout << "Unable to open file for saving." << endl;
+    }
+}
+
+// Function to load employees from a file
+void loadEmployees(vector<Employee*>& employees, const string& filename) {
+    ifstream inFile(filename);
+    if (inFile.is_open()) {
+        string firstName, lastName, username, password, employeeType;
+        int userId;
+        while (inFile >> firstName >> lastName >> userId >> username >> password >> employeeType) {
+            if (employeeType == "HR") {
+                employees.push_back(new HR_Employee(firstName, lastName, userId, username, password));
+            } else if (employeeType == "Manager") {
+                employees.push_back(new Manager(firstName, lastName, userId, username, password));
+            } else if (employeeType == "Employee") {
+                employees.push_back(new GeneralEmployee(firstName, lastName, userId, username, password));
+            }
+        }
+        inFile.close();
+    } else {
+        cout << "Unable to open file for loading." << endl;
+    }
 }
 
 // Login function
@@ -123,7 +244,7 @@ void hrMenu(HR_Employee* hr, vector<Employee*>& employees) {
             case 2:
                 hr->viewEmployees(employees); 
                 break;
-            case 3: {
+case 3: {
                 int searchId;
                 cout << "Enter employee ID to search: ";
                 cin >> searchId;
@@ -146,6 +267,7 @@ void hrMenu(HR_Employee* hr, vector<Employee*>& employees) {
             }
             case 6:
                 cout << "Exiting HR Menu." << endl;
+                restart = true;
                 break;
             default:
                 cout << "Invalid choice." << endl;
@@ -177,6 +299,7 @@ void managerMenu(Manager* manager, const vector<Employee*>& employees) {
             }
             case 3:
                 cout << "Exiting Management Menu." << endl;
+                restart = true;
                 break;
             default:
                 cout << "Invalid choice." << endl;
@@ -187,99 +310,72 @@ void managerMenu(Manager* manager, const vector<Employee*>& employees) {
 // General employee menu
 void generalEmployeeMenu(GeneralEmployee* employee) {
     cout << "\nGeneral Employee Menu:" << endl;
-    employee->viewOwnInfo();
-}
+    cout << "1. View Own Information" << endl;
+    cout << "2. Exit" << endl;
+    cout << "Enter your choice: ";
+    int choice;
+    cin >> choice;
 
-// HR_Employee methods
-void HR_Employee::viewEmployees(const vector<Employee*>& employees) {
-    for (const auto& employee : employees) {
-        employee->displayInfo();
-        cout << "--------------------" << endl;
+    switch (choice) {
+        case 1:
+            employee->viewOwnInfo();
+            break;
+        case 2:
+            cout << "Exiting General Employee Menu." << endl;
+            restart = true;
+            break;
+        default:
+            cout << "Invalid choice." << endl;
     }
-}
-
-void HR_Employee::searchEmployee(const vector<Employee*>& employees, int searchId) {
-    for (const auto& employee : employees) {
-        if (employee->userId == searchId) {
-            employee->displayInfo();
-            return;
-        }
-    }
-    cout << "Employee not found." << endl;
-}
-
-void HR_Employee::modifyEmployee(vector<Employee*>& employees, int modifyId) {
-    for (auto& employee : employees) {
-        if (employee->userId == modifyId) {
-            string newName;
-            cout << "Enter new name: ";
-            cin >> newName;
-            employee->name = newName; 
-            cout << "Employee information updated." << endl;
-            return;
-        }
-    }
-    cout << "Employee not found." << endl;
-}
-
-void HR_Employee::deleteEmployee(vector<Employee*>& employees, int deleteId) {
-    for (auto it = employees.begin(); it != employees.end(); ++it) {
-        if ((*it)->userId == deleteId) {
-            delete *it; // Delete the Employee object before erasing from vector
-            employees.erase(it);
-            cout << "Employee deleted." << endl;
-            return;
-        }
-    }
-    cout << "Employee not found." << endl;
-}
-
-// Manager methods
-void Manager::viewEmployees(const vector<Employee*>& employees) {
-    for (const auto& employee : employees) {
-        employee->displayInfo();
-        cout << "--------------------" << endl;
-    }
-}
-
-void Manager::searchEmployee(const vector<Employee*>& employees, int searchId) {
-    for (const auto& employee : employees) {
-        if (employee->userId == searchId) {
-            employee->displayInfo();
-            return;
-        }
-    }
-    cout << "Employee not found." << endl;
 }
 
 int main() {
-    vector<Employee*> employees; 
+    vector<Employee*> employees;
+    const string filename = "employees.txt";
 
-    createSampleEmployees(employees); 
+    // Load employees from file
+    loadEmployees(employees, filename);
 
-    string username, password;
-    Employee* user = nullptr;
-
-    cout << "Enter username: ";
-    cin >> username;
-    cout << "Enter password: ";
-    cin >> password;
-
-    if (login(username, password, employees, user)) {
-        if (dynamic_cast<HR_Employee*>(user)) {
-            hrMenu(dynamic_cast<HR_Employee*>(user), employees);
-        } else if (dynamic_cast<Manager*>(user)) {
-            managerMenu(dynamic_cast<Manager*>(user), employees);
-        } else if (dynamic_cast<GeneralEmployee*>(user)) {
-            generalEmployeeMenu(dynamic_cast<GeneralEmployee*>(user));
+    bool restart = false;
+    do {
+        string username, password;
+        cout << "Enter username (or type 'quit' to exit): ";
+        cin >> username;
+        if (username == "quit") {
+            cout << "Exiting program..." << endl;
+            break;
         }
-    }
+        cout << "Enter password: ";
+        cin >> password;
+        if (password == "quit") {
+            cout << "Exiting program..." << endl;
+            break;
+        }
 
-    // Clean up memory
-    for (auto& employee : employees) {
+        Employee* user = nullptr;
+
+        if (login(username, password, employees, user)) {
+            if (user->employeeType == "HR") {
+                hrMenu(static_cast<HR_Employee*>(user), employees);
+            } else if (user->employeeType == "Manager") {
+                managerMenu(static_cast<Manager*>(user), employees);
+            } else if (user->employeeType == "Employee") {
+                generalEmployeeMenu(static_cast<GeneralEmployee*>(user));
+            }
+        } else {
+            cout << "Invalid login credentials." << endl;
+        }
+
+    } while (restart);
+
+    // Save employees to file
+    saveEmployees(employees, filename);
+
+    // Cleanup
+    for (Employee* employee : employees) {
         delete employee;
     }
-    delete user;
+    employees.clear();
 
     return 0;
 }
