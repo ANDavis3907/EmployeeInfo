@@ -1,0 +1,10 @@
+John Doe 101 hr1 hr123 HR
+Jane Smith 102 manager1 manager123 Manager
+David Lee 103 employee1 employee123 Employee
+Mary Johnson 112 MJohnson MJ112 Employee
+Michael Brown 105 manager2 manager456 Manager
+Sarah Williams 106 hr2 hr456 HR
+James Wilson 107 employee3 employee567 Employee
+Emily Davis 108 employee4 employee678 Employee
+Robert Jones 109 manager3 manager789 Manager
+Alexis Davis 111 ADavis 3907 HR
